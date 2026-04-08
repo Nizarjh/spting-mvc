@@ -3,44 +3,57 @@ package az.niarjh.springcource.dao;
 import java.util.List;
 import java.util.UUID;
 
-import org.springframework.jdbc.core.JdbcTemplate;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
 import org.springframework.stereotype.Component;
 
 import az.niarjh.springcource.models.Person;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
 public class PersonDAO {
-    private final JdbcTemplate jdbcTemplate;
+    private final SessionFactory sessionFactory;
 
-    public PersonDAO(JdbcTemplate jdbcTemplate) {
-        this.jdbcTemplate = jdbcTemplate;
+    public PersonDAO(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
     }
 
+    @Transactional
     public List<Person> showAllPeople() {
-        return jdbcTemplate.query("SELECT * FROM person",
-                new PersonMapper());
+        Session session = sessionFactory.getCurrentSession();
+        return session.createQuery("from Person", Person.class)
+                .getResultList();
+
     }
 
+    @Transactional(readOnly = true)
     public Person showPerson(UUID id) {
-        return jdbcTemplate.queryForObject("SELECT * FROM person WHERE id=?",
-                new PersonMapper(),
-                id);
+        Session session = sessionFactory.getCurrentSession();
+        return session.find(Person.class, id);
     }
 
+    @Transactional
     public void save(Person person) {
-        jdbcTemplate.update("INSERT INTO person(name,age) VALUES(?,?)",
-                person.getName(),
-                person.getAge());
+        Session session = sessionFactory.getCurrentSession();
+        session.persist(person);
     }
 
+    @Transactional
     public void update(Person updatedPerson, UUID id) {
-        jdbcTemplate.update("UPDATE person SET name=?, age=? WHERE id=?",
-                updatedPerson.getName(),
-                updatedPerson.getAge(),
-                id);
+        Session session = sessionFactory.getCurrentSession();
+        Person personToBeUpdated = session.find(Person.class, id);
+    if (personToBeUpdated == null) {
+        throw new RuntimeException("Person not found");
     }
 
+    personToBeUpdated.setName(updatedPerson.getName());
+    personToBeUpdated.setAge(updatedPerson.getAge());
+    personToBeUpdated.setEmail(updatedPerson.getEmail());
+    }
+
+    @Transactional
     public void delete(UUID id) {
-        jdbcTemplate.update("DELETE FROM person WHERE id=?", id);
+        Session session = sessionFactory.getCurrentSession();
+        session.remove(session.find(Person.class, id));
     }
 }
