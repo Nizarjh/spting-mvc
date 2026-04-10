@@ -42,8 +42,8 @@ public class BookController {
             @ModelAttribute("person") Person person) {
         Book book = bookDAO.showBook(id);
         model.addAttribute("book", book);
-        if (book.getOwnerId() != null) {
-            model.addAttribute("owner", personDAO.showPerson(book.getOwnerId()));
+        if (book.getOwner() != null) {
+            model.addAttribute("owner", book.getOwner());
         } else {
             model.addAttribute("people", personDAO.showAllPeople());
         }
@@ -84,7 +84,7 @@ public class BookController {
     public String addBookToPerson(@ModelAttribute("person") Person person,
             @PathVariable("id") UUID id) {
         Book book = bookDAO.showBook(id);
-        book.setOwnerId(person.getId());
+        book.setOwner(person);
         bookDAO.updateBook(book, id);
         return REDIRECT;
     }

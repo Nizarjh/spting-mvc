@@ -6,7 +6,7 @@
   </head>
 
   <body>
-    <p th:text="${person.getName()} + ',' +  ${person.getAge()} ">Value</p>
+    <p th:text="${person.getName()} + ',' +  ${person.getAge()} + ',' +  ${person.getEmail()} ">Value</p>
 
     <div th:if="${books}">
       <hr />
